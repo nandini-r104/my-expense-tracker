@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #151820;
+      --card:      #1c2030;
+      --border:    #252a3a;
+      --accent:    #e8c97e;
+      --accent2:   #7eb5e8;
+      --accent3:   #e87ea8;
+      --accent4:   #7ee8b5;
+      --text:      #eef0f6;
+      --muted:     #6b7394;
+      --subtle:    #2e3450;
+      --red:       #e87e7e;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      font-weight: 400;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 0 0 60px 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px 28px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .header-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 38px;
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    header p.subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .header-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 18px;
+      text-align: right;
+    }
+
+    .header-date span {
+      display: block;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    /* ── MAIN WRAPPER ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding-left: 4px;
+      border-left: 2px solid var(--accent);
+      padding-left: 10px;
+    }
+
+    /* ── SUMMARY CARDS ── */
+    .cards-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .summary-card {
+      flex: 1;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .card-total::before  { background-color: var(--accent); }
+    .card-highest::before { background-color: var(--accent3); }
+    .card-month::before  { background-color: var(--accent2); }
+
+    .card-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .card-total   .card-value { color: var(--accent); }
+    .card-highest .card-value { color: var(--accent3); }
+    .card-month   .card-value { color: var(--accent2); }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-badge {
+      display: inline-block;
+      background-color: var(--subtle);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      margin-top: 4px;
+      align-self: flex-start;
+    }
+
+    /* ── TWO COLUMN LAYOUT ── */
+    .two-col {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .col-left  { flex: 1; }
+    .col-right { flex: 1.1; }
+
+    /* ── EXPENSE CATEGORIES ── */
+    .categories-list {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .category-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-item:last-child {
+      border-bottom: none;
+    }
+
+    .category-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .cat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .cat-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .cat-txn {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .cat-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .cat-bar-wrap {
+      width: 100%;
+      background-color: var(--subtle);
+      border-radius: 4px;
+      height: 4px;
+      margin-top: 8px;
+    }
+
+    .cat-bar {
+      height: 4px;
+      border-radius: 4px;
+    }
+
+    /* ── RECENT TRANSACTIONS ── */
+    .transactions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .txn-card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .txn-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .txn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background-color: var(--subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .txn-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .txn-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .txn-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .txn-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--red);
+    }
+
+    .txn-category {
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background-color: var(--subtle);
+      border-radius: 20px;
+      padding: 2px 8px;
+      color: var(--muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-line {
+      height: 1px;
+      background-color: var(--border);
+      margin: 0 32px 24px;
+    }
+
+    footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="header-left">
+      <div class="header-eyebrow">Personal Finance</div>
+      <h1>My Expense Tracker</h1>
+      <p class="subtitle">Track your monthly spending</p>
+    </div>
+    <div class="header-date">
+      Current Period
+      <span>March 2026</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── SUMMARY CARDS ── -->
+    <section>
+      <div class="section-label">Overview</div>
+      <div class="cards-row">
+
+        <div class="summary-card card-total">
+          <div class="card-icon">💸</div>
+          <div class="card-label">Total Spent</div>
+          <div class="card-value">₹24,580</div>
+          <div class="card-sub">of ₹30,000 budget</div>
+          <div class="card-badge">81.9% used</div>
+        </div>
+
+        <div class="summary-card card-highest">
+          <div class="card-icon">🏆</div>
+          <div class="card-label">Highest Category</div>
+          <div class="card-value">Food</div>
+          <div class="card-sub">₹8,400 this month</div>
+          <div class="card-badge">34.2% of total</div>
+        </div>
+
+        <div class="summary-card card-month">
+          <div class="card-icon">📅</div>
+          <div class="card-label">Current Month</div>
+          <div class="card-value">March</div>
+          <div class="card-sub">22 days elapsed</div>
+          <div class="card-badge">9 days remaining</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── TWO-COLUMN: CATEGORIES + TRANSACTIONS ── -->
+    <div class="two-col">
+
+      <!-- LEFT: EXPENSE CATEGORIES -->
+      <div class="col-left">
+        <div class="section-label">Expense Categories</div>
+        <div class="categories-list">
+
+          <div class="category-item">
+            <div class="category-left">
+              <div class="cat-dot" style="background-color: #e8c97e;"></div>
+              <div>
+                <div class="cat-name">Food & Dining</div>
+                <div class="cat-txn">14 transactions</div>
+                <div class="cat-bar-wrap">
+                  <div class="cat-bar" style="width:84%; background-color:#e8c97e;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cat-amount">₹8,400</div>
+          </div>
+
+          <div class="category-item">
+            <div class="category-left">
+              <div class="cat-dot" style="background-color: #7eb5e8;"></div>
+              <div>
+                <div class="cat-name">Transport</div>
+                <div class="cat-txn">9 transactions</div>
+                <div class="cat-bar-wrap">
+                  <div class="cat-bar" style="width:58%; background-color:#7eb5e8;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cat-amount">₹5,200</div>
+          </div>
+
+          <div class="category-item">
+            <div class="category-left">
+              <div class="cat-dot" style="background-color: #e87ea8;"></div>
+              <div>
+                <div class="cat-name">Shopping</div>
+                <div class="cat-txn">6 transactions</div>
+                <div class="cat-bar-wrap">
+                  <div class="cat-bar" style="width:70%; background-color:#e87ea8;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cat-amount">₹6,980</div>
+          </div>
+
+          <div class="category-item">
+            <div class="category-left">
+              <div class="cat-dot" style="background-color: #7ee8b5;"></div>
+              <div>
+                <div class="cat-name">Entertainment</div>
+                <div class="cat-txn">5 transactions</div>
+                <div class="cat-bar-wrap">
+                  <div class="cat-bar" style="width:40%; background-color:#7ee8b5;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cat-amount">₹4,000</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: RECENT TRANSACTIONS -->
+      <div class="col-right">
+        <div class="section-label">Recent Transactions</div>
+        <div class="transactions-list">
+
+          <div class="txn-card">
+            <div class="txn-left">
+              <div class="txn-icon">🍕</div>
+              <div>
+                <div class="txn-title">Domino's Pizza</div>
+                <div class="txn-date">Mar 08, 2026 · 8:42 PM</div>
+              </div>
+            </div>
+            <div class="txn-right">
+              <div class="txn-amount">−₹640</div>
+              <div class="txn-category">Food</div>
+            </div>
+          </div>
+
+          <div class="txn-card">
+            <div class="txn-left">
+              <div class="txn-icon">🚕</div>
+              <div>
+                <div class="txn-title">Uber Ride</div>
+                <div class="txn-date">Mar 07, 2026 · 9:15 AM</div>
+              </div>
+            </div>
+            <div class="txn-right">
+              <div class="txn-amount">−₹280</div>
+              <div class="txn-category">Transport</div>
+            </div>
+          </div>
+
+          <div class="txn-card">
+            <div class="txn-left">
+              <div class="txn-icon">🎬</div>
+              <div>
+                <div class="txn-title">Netflix Subscription</div>
+                <div class="txn-date">Mar 06, 2026 · 12:00 AM</div>
+              </div>
+            </div>
+            <div class="txn-right">
+              <div class="txn-amount">−₹649</div>
+              <div class="txn-category">Entertainment</div>
+            </div>
+          </div>
+
+          <div class="txn-card">
+            <div class="txn-left">
+              <div class="txn-icon">🛍️</div>
+              <div>
+                <div class="txn-title">Myntra Order</div>
+                <div class="txn-date">Mar 05, 2026 · 3:22 PM</div>
+              </div>
+            </div>
+            <div class="txn-right">
+              <div class="txn-amount">−₹1,899</div>
+              <div class="txn-category">Shopping</div>
+            </div>
+          </div>
+
+          <div class="txn-card">
+            <div class="txn-left">
+              <div class="txn-icon">☕</div>
+              <div>
+                <div class="txn-title">Starbucks Coffee</div>
+                <div class="txn-date">Mar 04, 2026 · 10:05 AM</div>
+              </div>
+            </div>
+            <div class="txn-right">
+              <div class="txn-amount">−₹420</div>
+              <div class="txn-category">Food</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer-line"></div>
+  <footer>
+    <p>© 2026 My Expense Tracker · HTML & CSS only</p>
+    <div class="footer-badge">Box Model + Flexbox</div>
+  </footer>
+
+</body>
+</html>
